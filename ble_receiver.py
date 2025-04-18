@@ -6,7 +6,7 @@ import time
 from bleak import BleakScanner, BleakClient
 
 DEVICE_NAME = "ESP32_Vibration"
-CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+CHARACTERISTIC_UUID = ""
 BUFFER_LIMIT = 4096
 LOG_FILE = "vibration_latency_log.json"
 

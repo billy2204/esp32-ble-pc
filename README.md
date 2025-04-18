@@ -1,32 +1,8 @@
 ## Sending JSON Data to Computer via BLE
 
 This is instruction to transmit JSON data from an ESP32 to a computer using Bluetooth Low Energy (BLE).
-
-### Client (Computer) Setup
-
-1. **Generate UUIDs:**
-    * Go to [https://www.uuidgenerator.net](https://www.uuidgenerator.net) to generate a UUID for the BLE characteristic. Note that you will need a second UUID for the service. Refresh the page to generate additional UUIDs as needed.
-2. **Customize `ble_receiver.py`:**
-    * Open the `ble_receiver.py` file in a text editor.
-    * Locate the line `#define CHARACTERISTIC_UUID ""`
-    * Replace the empty string `""` with the **characteristic UUID** generated in step 1.
-3. **Install Dependencies:**
-    * Open a terminal or command prompt.
-    * Run the following command to install the `bleak` package:
-
-```bash
-pip install bleak
-```
-
-4. **Run `ble_receiver.py`:**
-    * In the terminal, navigate to the directory containing `ble_receiver.py`.
-    * Execute the following command to start the receiver script:
-
-```bash
-python ble_receiver.py
-```
-
-    * The script will start scanning for BLE devices and print the received data to the console.
+### Generate UUIDs
+Go to [https://www.uuidgenerator.net](https://www.uuidgenerator.net) to generate a UUID for the BLE characteristic. Note that you will need a second UUID for the service. Refresh the page to generate additional UUIDs as needed.
 
 ### Hardware (ESP32) Setup
 
@@ -59,10 +35,39 @@ https://dl.espressif.com/dl/package_esp32_index.json
     * Go to `Tools` \> `Port` and select the COM port that your ESP32 is connected to.
     * Click the `Upload` button (the right arrow) to compile and upload the code to your ESP32.
     * Wait for the upload to complete.
-6. **View Serial Monitor Output:**
+6. **Connect to PC**
+    * Connect to PC normally through bluetooth
+    * Choose the device name `ESP32_Vibration` and connect
+7. **View Serial Monitor Output:**
     * After the upload is complete, open the Serial Monitor by going to `Tools` \> `Serial Monitor`.
     * Set the baud rate to 115200.
     * Press the reset button on your ESP32.
     * The Serial Monitor will display the JSON data being sent by the ESP32.
 
-<div style="text-align: center">⁂</div>
+### Client (Computer) Setup
+
+1. **Customize `ble_receiver.py`:**
+    * Open the `ble_receiver.py` file in a text editor.
+    * Locate the line `#define CHARACTERISTIC_UUID ""`
+    * Replace the empty string `""` with the **characteristic UUID** generated in step 1.
+2. **Install Dependencies:**
+    * Open a terminal or command prompt.
+    * Run the following command to install the `bleak` package:
+
+```bash
+pip install bleak
+```
+
+3. **Run `ble_receiver.py`:**
+    * In the terminal, navigate to the directory containing `ble_receiver.py`.
+    * Execute the following command to start the receiver script:
+
+```bash
+python ble_receiver.py
+```
+
+    * The script will start scanning for BLE devices and print the received data to the console.
+
+
+
+

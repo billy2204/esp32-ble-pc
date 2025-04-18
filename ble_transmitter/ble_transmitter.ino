@@ -4,8 +4,8 @@
 #include <BLE2902.h>
 #include <ArduinoJson.h>
 
-#define SERVICE_UUID        "4fafc201-1fb5-459e-8fcc-c5c9c331914b"
-#define CHARACTERISTIC_UUID "beb5483e-36e1-4688-b7f5-ea07361b26a8"
+#define SERVICE_UUID        ""
+#define CHARACTERISTIC_UUID ""
 
 const int buzzerPin = 26;
 const int vibrationMotorPins[16] = {4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 27, 33};

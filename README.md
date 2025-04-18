@@ -1,4 +1,4 @@
-##Sending JSON Data to Computer via BLE
+## Sending JSON Data to Computer via BLE
 
 This is instruction to transmit JSON data from an ESP32 to a computer using Bluetooth Low Energy (BLE).
 

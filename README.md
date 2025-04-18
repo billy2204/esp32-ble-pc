@@ -1,7 +1,7 @@
 # SEND DATA AS JSON TO COMPUTER VIA BLE
 
 ## Client 
-###Customize *ble_receiver.py*: 
+Customize *ble_receiver.py*: 
 Create UUID on ***https://www.uuidgenerator.net***
 Open *ble_receiver.py*
 Go to line: 

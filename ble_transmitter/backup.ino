@@ -49,7 +49,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
 void setupVibrationMotors() {
   for (int i = 0; i < 16; i++) {
     pinMode(vibrationMotorPins[i], OUTPUT);
-    ledcAttachChannel(vibrationMotorPins[i], 5000, 8, i);// Set up PWM channel
+    ledcAttach(vibrationMotorPins[i], i, 5000, 8); // Combined function: pin, channel, frequency, resolution
     ledcWrite(i, 0); // Set initial duty cycle to 0
     
     // Initialize motor data structure (ID is 1-based, array is 0-based)
@@ -95,26 +95,80 @@ String createTimestampJson() {
   return jsonString;
 }
 
-// Function to activate a specific motor with the stored parameters
-void activateMotor(int motorIndex) {
-  if (motorIndex < 0 || motorIndex >= 16) return;
+// Track motor activation times
+unsigned long motorActivationTimes[16] = {0};
+
+// Function to activate either a specific motor or all motors
+void activateMotor(int motorIndex, bool isActiveAll = false) {
+  // Check if we need to activate all motors
+  if (isActiveAll) {
+    Serial.println("Activating all motors");
+    // Activate all motors with their stored parameters
+    for (int i = 0; i < 16; i++) {
+      NodeInfo& motor = motors[i];
+      
+      // Set motor active
+      motor.motorActive = true;
+      
+      // Apply intensity via PWM
+      ledcWrite(i, motor.intense);
+      
+      // Record activation time to deactivate later
+      motorActivationTimes[i] = millis();
+      
+      Serial.print("Motor ");
+      Serial.print(motor.id);
+      Serial.print(" activated with intensity ");
+      Serial.print(motor.intense);
+      Serial.print(" for ");
+      Serial.print(motor.dur);
+      Serial.println(" ms");
+    }
+  } 
+  // Otherwise activate just the specified motor
+  else {
+    if (motorIndex < 0 || motorIndex >= 16) return;
+    
+    NodeInfo& motor = motors[motorIndex];
+    int channel = motorIndex; // PWM channel matches array index
+    
+    // Set motor active
+    motor.motorActive = true;
+    
+    // Apply intensity via PWM
+    ledcWrite(channel, motor.intense);
+    
+    // Record activation time to deactivate later
+    motorActivationTimes[motorIndex] = millis();
+    
+    Serial.print("Motor ");
+    Serial.print(motor.id);
+    Serial.print(" activated with intensity ");
+    Serial.print(motor.intense);
+    Serial.print(" for ");
+    Serial.print(motor.dur);
+    Serial.println(" ms");
+  }
+}
+
+// Function to check and update motor states (non-blocking)
+void updateMotorStates() {
+  unsigned long currentTime = millis();
   
-  NodeInfo& motor = motors[motorIndex];
-  int channel = motorIndex; // PWM channel matches array index
-  
-  // Set motor active
-  motor.motorActive = true;
-  
-  // Apply intensity via PWM
-  ledcWrite(channel, motor.intense);
-  
-  // Schedule deactivation after duration
-  // Note: In a real implementation, you'd want to use a non-blocking approach
-  delay(motor.dur);
-  
-  // Turn off motor
-  ledcWrite(channel, 0);
-  motor.motorActive = false;
+  for (int i = 0; i < 16; i++) {
+    NodeInfo& motor = motors[i];
+    
+    // Check if this motor is active and needs to be turned off
+    if (motor.motorActive && (currentTime - motorActivationTimes[i] >= motor.dur)) {
+      // Turn off the motor
+      ledcWrite(i, 0);
+      motor.motorActive = false;
+      
+      Serial.print("Motor ");
+      Serial.print(motor.id);
+      Serial.println(" deactivated");
+    }
+  }
 }
 
 // Function to parse incoming JSON and update motor data
@@ -141,14 +195,27 @@ bool parseMotorCommand(String jsonString) {
       motors[arrayIndex].intense = doc["intense"];
       motors[arrayIndex].dur = doc["dur"];
       
-      // Activate motor
-      activateMotor(arrayIndex);
+      // Check if we need to activate all motors
+      bool activateAllMotors = false;
+      if (doc.containsKey("isActiveAll")) {
+        activateAllMotors = doc["isActiveAll"];
+      }
+      
+      // Activate motor(s)
+      activateMotor(arrayIndex, activateAllMotors);
       return true;
     }
   } 
   // Check if it's a multi-motor command
   else if (doc.containsKey("motors")) {
     JsonArray motorArray = doc["motors"];
+    
+    // Check if we need to activate all motors
+    bool activateAllMotors = false;
+    if (doc.containsKey("isActiveAll")) {
+      activateAllMotors = doc["isActiveAll"];
+    }
+    
     for (JsonObject motorObj : motorArray) {
       if (motorObj.containsKey("id") && motorObj.containsKey("intense") && motorObj.containsKey("dur")) {
         int id = motorObj["id"];
@@ -157,11 +224,19 @@ bool parseMotorCommand(String jsonString) {
           motors[arrayIndex].intense = motorObj["intense"];
           motors[arrayIndex].dur = motorObj["dur"];
           
-          // In a real application, you'd queue these commands rather than activating immediately
-          // For demonstration, we'll just update the values
+          // If not activating all, activate individual motors immediately
+          if (!activateAllMotors) {
+            activateMotor(arrayIndex, false);
+          }
         }
       }
     }
+    
+    // If activating all, do it after updating all parameters
+    if (activateAllMotors) {
+      activateMotor(0, true);
+    }
+    
     return true;
   }
   
@@ -215,25 +290,35 @@ void setup() {
 }
 
 void loop() {
+  // Non-blocking motor management
+  updateMotorStates();
+  
   if (deviceConnected) {
-    // Send all motors data JSON
-    String motorsJson = createMotorsJson();
-    pCharacteristic->setValue(motorsJson.c_str());
-    pCharacteristic->notify();
-    Serial.print("Sent motors data: ");
-    Serial.println(motorsJson);
+    static unsigned long lastUpdateTime = 0;
+    unsigned long currentTime = millis();
     
-    delay(100); // Small gap before sending timestamp
-    
-    // Send timestamp JSON for latency calculation
-    String tsJson = createTimestampJson();
-    pCharacteristic->setValue(tsJson.c_str());
-    pCharacteristic->notify();
-    Serial.print("Sent timestamp: ");
-    Serial.println(tsJson);
-    
-    delay(5000);  // Send every 5 seconds
-  } else {
-    delay(100);
+    // Send data every 5 seconds without blocking
+    if (currentTime - lastUpdateTime >= 5000) {
+      // Send all motors data JSON
+      String motorsJson = createMotorsJson();
+      pCharacteristic->setValue(motorsJson.c_str());
+      pCharacteristic->notify();
+      Serial.print("Sent motors data: ");
+      Serial.println(motorsJson);
+      
+      delay(100); // Small gap before sending timestamp
+      
+      // Send timestamp JSON for latency calculation
+      String tsJson = createTimestampJson();
+      pCharacteristic->setValue(tsJson.c_str());
+      pCharacteristic->notify();
+      Serial.print("Sent timestamp: ");
+      Serial.println(tsJson);
+      
+      lastUpdateTime = currentTime;
+    }
   }
+  
+  // Always give the system some time to process other tasks
+  delay(10);
 }

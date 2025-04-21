@@ -35,6 +35,7 @@ struct NodeInfo {
   int id;
   int intensity;
   int duration;
+  bool motorActive;
 };
 
 

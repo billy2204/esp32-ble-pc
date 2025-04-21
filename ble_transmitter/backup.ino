@@ -49,7 +49,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
 void setupVibrationMotors() {
   for (int i = 0; i < 16; i++) {
     pinMode(vibrationMotorPins[i], OUTPUT);
-    ledcAttach(vibrationMotorPins[i], i, 5000, 8); // Combined function: pin, channel, frequency, resolution
+    ledcAttachChannel(vibrationMotorPins[i], 5000, 8, i);// Set up PWM channel
     ledcWrite(i, 0); // Set initial duty cycle to 0
     
     // Initialize motor data structure (ID is 1-based, array is 0-based)

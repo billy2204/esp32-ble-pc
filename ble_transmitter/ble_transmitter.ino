@@ -41,8 +41,7 @@ struct NodeInfo {
 void setupVibrationMotors() {
   for (int i = 0; i < 16; i++) {
     pinMode(vibrationMotorPins[i], OUTPUT);//initialze motor pin
-    ledcSetup(i, 5000, 8); // Set up PWM channel
-    ledcAttachPin(motorPins[i], i); // Attach pin to PWM channel
+    ledcAttach(i, 5000, 8); // Set up PWM channel
     ledcWrite(i, 0); // Set initial duty cycle to 0
     Serial.print("Motor ");
     Serial.print(i);

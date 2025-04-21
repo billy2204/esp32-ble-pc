@@ -7,10 +7,11 @@
 #define SERVICE_UUID        ""
 #define CHARACTERISTIC_UUID ""
 
-const int buzzerPin = 26;
-const int vibrationMotorPins[16] = {4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 25, 27, 33};
+const int buzzerPin = 25;
+const int vibrationMotorPins[16] = {4, 5, 12, 13, 14, 15, 16, 17, 18, 19, 21, 22, 23, 26, 27, 33};
 bool deviceConnected = false;
 BLECharacteristic* pCharacteristic = nullptr;
+
 
 class MyServerCallbacks : public BLEServerCallbacks {
   void onConnect(BLEServer* pServer) override {
@@ -28,14 +29,29 @@ class MyServerCallbacks : public BLEServerCallbacks {
   }
 };
 
+// NodeInfo structure to hold motor data
+
+struct NodeInfo {
+  int id;
+  int intensity;
+  int duration;
+};
+
+
 void setupVibrationMotors() {
   for (int i = 0; i < 16; i++) {
-    pinMode(vibrationMotorPins[i], OUTPUT);
-    digitalWrite(vibrationMotorPins[i], LOW);
+    pinMode(vibrationMotorPins[i], OUTPUT);//initialze motor pin
+    ledcSetup(i, 5000, 8); // Set up PWM channel
+    ledcAttachPin(motorPins[i], i); // Attach pin to PWM channel
+    ledcWrite(i, 0); // Set initial duty cycle to 0
+    Serial.print("Motor ");
+    Serial.print(i);
+    Serial.print(" initialized on pin ");
+    Serial.println(vibrationMotorPins[i]);
   }
 }
 
-// Create a compact JSON string for all motors (id, int, dur)
+// Create a compact JSON string for all motors (id, intense, dur)
 String createMotorsJson() {
   StaticJsonDocument<1024> doc;
   JsonArray motorArray = doc.createNestedArray("motors");
@@ -43,7 +59,7 @@ String createMotorsJson() {
   for (int i = 1; i <= 16; i++) {
     JsonObject motor = motorArray.createNestedObject();
     motor["id"] = i;
-    motor["int"] = random(50, 256);
+    motor["intense"] = random(50, 256);
     motor["dur"] = random(100, 1001);
   }
 

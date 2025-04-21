@@ -23,6 +23,7 @@ https://dl.espressif.com/dl/package_esp32_index.json
     * Search for `esp32`.
     * Select `ESP32 by Espressif Systems` and click `Install`.
     * Wait for the installation to complete.
+    ***Notice: you must install the esp32 version 2.0.17 to use the ledc library***
 4. **Customize `ble_transmitter.ino`:**
     * Open the `ble_transmitter.ino` file in the Arduino IDE.
     * Locate the line `#define CHARACTERISTIC_UUID ""`

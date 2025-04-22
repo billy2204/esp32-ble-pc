@@ -50,9 +50,7 @@ class MyServerCallbacks : public BLEServerCallbacks {
 void setupVibrationMotors() {
   for (int i = 0; i < 16; i++) {
     pinMode(vibrationMotorPins[i], OUTPUT);
-    // Fixed ledcAttach call - using only 3 parameters as required
-    ledcAttachPin(vibrationMotorPins[i], i); // Attach pin to channel
-    ledcSetup(i, 5000, 8);  // Set up channel with frequency and resolution
+    ledcAttachChannel(vibrationMotorPins[i], 5000,8, i); // Attach pin to channel
     ledcWrite(i, 0);        // Set initial duty cycle to 0
 
     // Initialize motor data structure (ID is 1-based, array is 0-based)
@@ -232,7 +230,7 @@ void setup() {
   // Add write callback to handle incoming commands
   class CharacteristicCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
-      std::string valueStr = pCharacteristic->getValue();
+      String valueStr = pCharacteristic->getValue();
       if (valueStr.length() > 0) {
         String jsonString = String(valueStr.c_str());
         Serial.print("Received: ");

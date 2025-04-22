@@ -223,7 +223,7 @@ void setup() {
   pinMode(buzzerPin, OUTPUT);
   setupVibrationMotors();
 
-  BLEDevice::init("ESP32_Vibration");
+  BLEDevice::init("ESP32_Vibration_Glove");
   BLEServer* pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
 
@@ -237,7 +237,7 @@ void setup() {
   // Add write callback to handle incoming commands
   class CharacteristicCallbacks : public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic* pCharacteristic) {
-      String valueStr = pCharacteristic->getValue();
+      String valueStr = pCharacteristic->getValue(); //get value as json string from client
       if (valueStr.length() > 0) {
         String jsonString = String(valueStr.c_str());
         Serial.print("Received: ");

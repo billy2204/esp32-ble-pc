@@ -17,14 +17,14 @@ struct NodeInfo {
   int id;            // Motor ID (1-16)
   int intensity;     // Intensity value (0-255)
   int duration;      // Duration in milliseconds
-  bool motorActive;  // Current state of the motor
+  int order;  // Current state of the motor
 
   // Default constructor
   NodeInfo()
-    : id(0), intensity(0), duration(0), motorActive(false) {}
+    : id(0), intensity(0), duration(0), order(0) {}
 
   // Constructor with parameters
-  NodeInfo(int _id, int _intensity, int _duration)
+  NodeInfo(int _id, int _intensity, int _duration, int _ )
     : id(_id), intensity(_intensity), duration(_duration), motorActive(false) {}
 };
 

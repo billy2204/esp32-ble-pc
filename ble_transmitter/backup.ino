@@ -62,39 +62,6 @@ void setupVibrationMotors() {
   }
 }
 
-// Update motor data with random values and create JSON
-String createMotorsJson() {
-  StaticJsonDocument<1024> doc;
-  JsonArray motorArray = doc.createNestedArray("motors");
-  
-  for (int i = 0; i < 16; i++) {
-    // Update motor data
-    motors[i].intense = random(50, 256);
-    motors[i].dur = random(100, 1001);
-    
-    // Create JSON object from motor data
-    JsonObject motor = motorArray.createNestedObject();
-    motor["id"] = motors[i].id;
-    motor["intense"] = motors[i].intense;
-    motor["dur"] = motors[i].dur;
-  }
-  
-  String jsonString;
-  serializeJson(doc, jsonString);
-  jsonString += ";";  // End marker
-  return jsonString;
-}
-
-// Create JSON string for timestamp package
-String createTimestampJson() {
-  StaticJsonDocument<128> doc;
-  doc["timestamp"] = millis();
-  String jsonString;
-  serializeJson(doc, jsonString);
-  jsonString += ";";
-  return jsonString;
-}
-
 // Track motor activation times
 unsigned long motorActivationTimes[16] = {0};
 
@@ -292,32 +259,6 @@ void setup() {
 void loop() {
   // Non-blocking motor management
   updateMotorStates();
-  
-  if (deviceConnected) {
-    static unsigned long lastUpdateTime = 0;
-    unsigned long currentTime = millis();
-    
-    // Send data every 5 seconds without blocking
-    if (currentTime - lastUpdateTime >= 5000) {
-      // Send all motors data JSON
-      String motorsJson = createMotorsJson();
-      pCharacteristic->setValue(motorsJson.c_str());
-      pCharacteristic->notify();
-      Serial.print("Sent motors data: ");
-      Serial.println(motorsJson);
-      
-      delay(100); // Small gap before sending timestamp
-      
-      // Send timestamp JSON for latency calculation
-      String tsJson = createTimestampJson();
-      pCharacteristic->setValue(tsJson.c_str());
-      pCharacteristic->notify();
-      Serial.print("Sent timestamp: ");
-      Serial.println(tsJson);
-      
-      lastUpdateTime = currentTime;
-    }
-  }
   
   // Always give the system some time to process other tasks
   delay(10);

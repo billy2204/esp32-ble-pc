@@ -6,6 +6,10 @@ Go to [https://www.uuidgenerator.net](https://www.uuidgenerator.net) to generate
 
 ### Hardware (ESP32) Setup
 
+**Description**
+When client connect to esp32 succesfully, the buzzer will play a tone 1 time
+When client disconnect to esp32, the buzzer will play a tone 2 time
+
 1. **Install Arduino IDE:**
     * Download and install the Arduino IDE from [https://www.arduino.cc/en/software](https://www.arduino.cc/en/software).
 2. **Add ESP32 Board Support:**
